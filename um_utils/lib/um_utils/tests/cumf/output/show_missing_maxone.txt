@@ -1,0 +1,86 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+* CUMF-II Comparison Report *
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+File 1: [Test generated file 1]
+File 2: [Test generated file 2]
+Files DO NOT compare
+  * 1 differences in fixed_length_header (with 7 ignored indices)
+  * 1 differences in integer_constants (with 0 ignored indices)
+  * 5 differences in level_dependent_constants (with 0 ignored indices)
+  * 2 field differences, of which 1 are in data
+
+Compared 5/9 fields, with 3 matches
+2 fields found in file 1 were not in file 2
+2 fields found in file 2 were not in file 1
+
+Fields in file 1 but not file 2:
+ * 1/7: U COMPNT OF WIND AFTER TIMESTEP -  t1(2015/-99/-99 -99:-99:-99)  lblev(-99)/blev(0.0)  lbproc(-99)
+
+  More fields are missing from file 2, but the print maximum has been reached.
+
+Fields in file 2 but not file 1:
+ * 1/7: V COMPNT OF WIND AFTER TIMESTEP -  t1(2015/-99/-99 -99:-99:-99)  lblev(-99)/blev(0.0)  lbproc(-99)
+
+  More fields are missing from file 1, but the print maximum has been reached.
+
+Maximum RMS diff as % of data in file 1: 382.97084310253518 (field 4)
+Maximum RMS diff as % of data in file 2: 76.594168620507048 (field 4)
+
+%%%%%%%%%%%%%%%%%%%%%%%
+* fixed_length_header *
+%%%%%%%%%%%%%%%%%%%%%%%
+Components DO NOT compare (compared 249/256 values)
+Ignored indices:
+  Index 35 (t3_year)
+  Index 36 (t3_month)
+  Index 37 (t3_day)
+  Index 38 (t3_hour)
+  Index 39 (t3_minute)
+  Index 40 (t3_second)
+  Index 41 (t3_year_day_number)
+Component differences:
+  Index 9 (grid_staggering) differs - file_1: 3  file_2: 6
+
+%%%%%%%%%%%%%%%%%%%%%
+* integer_constants *
+%%%%%%%%%%%%%%%%%%%%%
+Components DO NOT compare (compared 46/46 values)
+Component differences:
+  Index 8 (num_p_levels) differs - file_1: 38  file_2: 70
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+* level_dependent_constants *
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Components DO NOT compare (compared 48/48 values)
+Component differences:
+  Index (1, 1) differs - file_1: 1  file_2:  5.0
+  Index (2, 1) differs - file_1: 2  file_2: 10.0
+  Index (3, 1) differs - file_1: 3  file_2: 15.0
+  Index (4, 1) differs - file_1: 4  file_2: 20.0
+  Index (5, 1) differs - file_1: 5  file_2: 25.0
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+* Field 2/5 - THETA AFTER TIMESTEP *
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Lookup compares, data DOES NOT compare
+Compared 64/64 lookup values.
+File_1 lookup info:
+  t1(2015/-99/-99 -99:-99:-99)  lblev(-99)/blev(0.0)  lbproc(-99)
+Data differences:
+  Number of point differences  : 11/12
+  Maximum absolute difference  : 44.0
+  RMS difference               : 25.974346318370873
+  RMS diff as % of file_1 data : 382.97084310253518
+  RMS diff as % of file_2 data : 76.594168620507048
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+* Field 3/5 - THETA AFTER TIMESTEP *
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Lookup DOES NOT compare, data compares
+Compared 64/64 lookup values.
+File_1 lookup info:
+  t1(2015/-99/-99 -99:-99:-99)  lblev(-99)/blev(0.0)  lbproc(-99)
+Lookup differences:
+  Index 29 (lbegin) differs - file_1: 12345  file_2: 67890
+

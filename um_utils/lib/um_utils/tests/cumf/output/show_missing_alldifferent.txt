@@ -1,0 +1,49 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+* CUMF-II Comparison Report *
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+File 1: [Test generated file 1]
+File 2: [Test generated file 2]
+Files DO NOT compare
+  * 1 differences in fixed_length_header (with 7 ignored indices)
+  * 1 differences in integer_constants (with 0 ignored indices)
+  * 5 differences in level_dependent_constants (with 0 ignored indices)
+
+Compared 0/14 fields, with 0 matches
+7 fields found in file 1 were not in file 2
+7 fields found in file 2 were not in file 1
+Not listing specific missing fields, because all fields are missing from both files. (No fields are common.)
+
+%%%%%%%%%%%%%%%%%%%%%%%
+* fixed_length_header *
+%%%%%%%%%%%%%%%%%%%%%%%
+Components DO NOT compare (compared 249/256 values)
+Ignored indices:
+  Index 35 (t3_year)
+  Index 36 (t3_month)
+  Index 37 (t3_day)
+  Index 38 (t3_hour)
+  Index 39 (t3_minute)
+  Index 40 (t3_second)
+  Index 41 (t3_year_day_number)
+Component differences:
+  Index 9 (grid_staggering) differs - file_1: 3  file_2: 6
+
+%%%%%%%%%%%%%%%%%%%%%
+* integer_constants *
+%%%%%%%%%%%%%%%%%%%%%
+Components DO NOT compare (compared 46/46 values)
+Component differences:
+  Index 8 (num_p_levels) differs - file_1: 38  file_2: 70
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+* level_dependent_constants *
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Components DO NOT compare (compared 48/48 values)
+Component differences:
+  Index (1, 1) differs - file_1: 1  file_2:  5.0
+  Index (2, 1) differs - file_1: 2  file_2: 10.0
+  Index (3, 1) differs - file_1: 3  file_2: 15.0
+  Index (4, 1) differs - file_1: 4  file_2: 20.0
+  Index (5, 1) differs - file_1: 5  file_2: 25.0
+
