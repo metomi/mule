@@ -51,7 +51,7 @@ class CleanCommand(setuptools.Command):
 
 setuptools.setup(
     name='um_packing',
-    version='2019.01.1',
+    version='2020.01.1',
     description='Unified Model packing library extension',
     author='UM Systems Team',
     url='https://code.metoffice.gov.uk/trac/um',
@@ -70,4 +70,5 @@ setuptools.setup(
                     include_dirs=[np.get_include()],
                     libraries=["shum_byteswap",
                                "shum_wgdos_packing",
-                               "shum_string_conv"])])})
+                               "shum_string_conv",
+                               "shum_constants"])])})

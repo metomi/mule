@@ -9,7 +9,7 @@
 #
 # In most cases the modules can be directly installed via the usual 
 # python setuptools methods.  However in some cases this might not be 
-# possible, so this script instead builds all 3 modules to a dummy
+# possible, so this script instead builds all modules to a dummy
 # install location in a temporary directory and then copies the 
 # results to the chosen destinations.
 #
@@ -19,15 +19,15 @@ if [ $# -lt 3 ] ; then
     echo "USAGE: "
     echo "   $(basename $0) [--sstpert_lib <sstpert_lib>]"
     echo "                  [--wafccb_lib <wafccb_lib>]"
-    echo "                  [--spiral_lib ]"
+    echo "                  [--spiral_lib ] [--ppibm_lib]"
     echo "                  <lib_dest> <bin_dest> <shumlib> "
     echo ""
     echo "   Must be called from the top-level of a working "
     echo "   copy of the UM mule project, containing the 3"
     echo "   module folders (um_packing, um_utils and mule)"
     echo ""
-    echo "   Optionally the um_sstpert, um_wafccb and/or "
-    echo "   um_spiral extensions can be included (but they are "
+    echo "   Optionally the um_sstpert, um_wafccb, um_spiral and/or "
+    echo "   um_ppibm extensions can be included (but they are "
     echo "   not by default because they aren't required for "
     echo "   any core Mule functionality, and the sstpert/wafccb "
     echo "   libraries are only available under a UM license)"
@@ -51,6 +51,20 @@ if [ $# -lt 3 ] ; then
     echo "  * --spiral_lib"
     echo "      (Optional) Toggles the building of the UM spiral_search"
     echo "      extension (uses the Shumlib location from <shumlib>)."
+    echo "  * --ppibm_lib"
+    echo "      (Optional) Toggles the building of the UM ppibm"
+    echo "      extension (uses the Shumlib location from <shumlib>)."
+    echo "  * --library_lock"
+    echo "      (Optional) Ordinarily the rpath for any library"
+    echo "      links will be absolute; meaning the produced"
+    echo "      extensions will *always* resolve to the given "
+    echo "      library locations, regardless of Mule's location."
+    echo "      Setting this flag will make them relative instead;"
+    echo "      meaning the produced extensions will resolve based"
+    echo "      on the given library locations relative to"
+    echo "      <lib_dest>.  This allows Mule and its dependent"
+    echo "      libraries to be moved around together provided their"
+    echo "      relative positions remain the same."
     echo ""
     echo "  After running the script the directory "
     echo "  named in <lib_dest> should be suitable to "
@@ -64,14 +78,20 @@ fi
 SSTPERT_LIB=
 WAFCCB_LIB=
 SPIRAL_LIB=
+PPIBM_LIB=
+LIBRARY_LOCK=
 while [ $# -gt 3 ] ; do
     case "$1" in
         --sstpert_lib) shift
                      SSTPERT_LIB=$1 ;;
         --wafccb_lib) shift
                      WAFCCB_LIB=$1 ;;
-        --spiral_lib) 
+        --spiral_lib)  
                      SPIRAL_LIB="build" ;;
+        --ppibm_lib) 
+                     PPIBM_LIB="build" ;;
+        --library_lock)
+                     LIBRARY_LOCK="lock" ;;
         *) echo "Unrecognised argument: $1"
            exit 1 ;;
     esac
@@ -91,6 +111,9 @@ if [ -n "$WAFCCB_LIB" ] ; then
 fi
 if [ -n "$SPIRAL_LIB" ] ; then
     MODULE_LIST="$MODULE_LIST um_spiral_search"
+fi
+if [ -n "$PPIBM_LIB" ] ; then
+    MODULE_LIST="$MODULE_LIST um_ppibm"
 fi
 
 # A few hardcoded settings
@@ -166,24 +189,56 @@ wc_root=$(pwd)
 #-------------------------#
 # Building the libraries  #
 #-------------------------#
+
+# Function to generate relative path between two files - we want to make
+# Mule + the $UMDIR libraries (shumlib, sstpert, wafccb) portable so long
+# as they are located in the same place relative to each other.  Could
+# use ln -r for this or realpath but since they aren't as common as we'd
+# like let's use Python
+function pyrelpath(){
+    $PYTHONEXEC -c "import os.path; print(os.path.relpath(\"$1\",\"$2\"))"
+}
+
 # Packing library first
 echo "Changing directory to packing module:" $wc_root/um_packing
 cd $wc_root/um_packing
 
+# Work out the relative path from the final location of this module to
+# the shumlib library and create a sym-link (if library lock active)
+if [ -n "$LIBRARY_LOCK" ] ; then
+    relshum=$(pyrelpath $SHUMLIB/lib $LIB_DEST/um_packing)
+    ln -s $relshum $LIB_DEST/um_packing/shumlib_lib
+    rpath=\$ORIGIN/shumlib_lib
+else
+    rpath=$SHUMLIB/lib
+fi
+
 echo "Building packing module..."
 $PYTHONEXEC setup.py build_ext --inplace \
-   -I$SHUMLIB/include -L$SHUMLIB/lib -R$SHUMLIB/lib
+   -I$SHUMLIB/include -L$SHUMLIB/lib -R$rpath
 
 # SSTPert library (if being used)
 if [ -n "$SSTPERT_LIB" ] ; then
     echo "Changing directory to sstpert module:" $wc_root/um_sstpert
     cd $wc_root/um_sstpert
 
+    # Work out the relative path from the final location of this module to
+    # the libraries and create sym-links (if library lock active)
+    if [ -n "$LIBRARY_LOCK" ] ; then
+        relshum=$(pyrelpath $SHUMLIB/lib $LIB_DEST/um_sstpert)
+        relsstpert=$(pyrelpath $SSTPERT_LIB/lib $LIB_DEST/um_sstpert)
+        ln -s $relsstpert $LIB_DEST/um_sstpert/sstpert_lib
+        ln -s $relshum $LIB_DEST/um_sstpert/shumlib_lib
+        rpath=\$ORIGIN/sstpert_lib:\$ORIGIN/shumlib_lib
+    else
+        rpath=$SSTPERT_LIB/lib:$SHUMLIB/lib
+    fi
+
     echo "Building sstpert module..."
     $PYTHONEXEC setup.py build_ext --inplace \
         -I$SSTPERT_LIB/include \
         -L$SSTPERT_LIB/lib:$SHUMLIB/lib \
-        -R$SSTPERT_LIB/lib:$SHUMLIB/lib
+        -R$rpath
 fi
 
 # WAFC CB library (if being used)
@@ -191,11 +246,21 @@ if [ -n "$WAFCCB_LIB" ] ; then
     echo "Changing directory to wafccb module:" $wc_root/um_wafccb
     cd $wc_root/um_wafccb
 
+    # Work out the relative path from the final location of this module to
+    # the libraries and create sym-links (if library lock active)
+    if [ -n "$LIBRARY_LOCK" ] ; then
+        relwafccb=$(pyrelpath $WAFCCB_LIB/lib $LIB_DEST/um_wafccb)
+        ln -s $relwafccb $LIB_DEST/um_wafccb/wafccb_lib
+        rpath=\$ORIGIN/wafccb_lib
+    else
+        rpath=$WAFCCB_LIB/lib
+    fi
+
     echo "Building wafccb module..."
     $PYTHONEXEC setup.py build_ext --inplace \
         -I$WAFCCB_LIB/include \
         -L$WAFCCB_LIB/lib \
-        -R$WAFCCB_LIB/lib
+        -R$rpath
 fi
 
 # Spiral search library (if being used)
@@ -203,11 +268,43 @@ if [ -n "$SPIRAL_LIB" ] ; then
     echo "Changing directory to spiral search module:" $wc_root/um_spiral_search
     cd $wc_root/um_spiral_search
 
+    # Work out the relative path from the final location of this module to
+    # the libraries and create sym-links (if library lock active)
+    if [ -n "$LIBRARY_LOCK" ] ; then
+        relshum=$(pyrelpath $SHUMLIB/lib $LIB_DEST/um_spiral_search)
+        ln -s $relshum $LIB_DEST/um_spiral_search/shumlib_lib
+        rpath=\$ORIGIN/shumlib_lib
+    else
+        rpath=$SHUMLIB/lib
+    fi
+
     echo "Building spiral search module..."
     $PYTHONEXEC setup.py build_ext --inplace \
         -I$SHUMLIB/include \
         -L$SHUMLIB/lib \
-        -R$SHUMLIB/lib
+        -R$rpath
+fi
+
+# PP IBM library (if being used)
+if [ -n "$PPIBM_LIB" ] ; then
+    echo "Changing directory to ppibm module:" $wc_root/um_ppibm
+    cd $wc_root/um_ppibm
+
+    # Work out the relative path from the final location of this module to
+    # the libraries and create sym-links (if library lock active)
+    if [ -n "$LIBRARY_LOCK" ] ; then
+        relshum=$(pyrelpath $SHUMLIB/lib $LIB_DEST/um_ppibm)
+        ln -s $relshum $LIB_DEST/um_ppibm/shumlib_lib
+        rpath=\$ORIGIN/shumlib_lib
+    else
+        rpath=$SHUMLIB/lib
+    fi
+
+    echo "Building ppibm module..."
+    $PYTHONEXEC setup.py build_ext --inplace \
+        -I$SHUMLIB/include \
+        -L$SHUMLIB/lib \
+        -R$rpath
 fi
 
 #----------------------------------------------#

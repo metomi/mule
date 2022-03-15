@@ -4,7 +4,7 @@
 # which you should have received as part of this distribution.
 # *****************************COPYRIGHT******************************
 #
-# This file is part of the UM SST Pert library module.
+# This file is part of the SHUMlib packing library module.
 #
 # It is free software: you can redistribute it and/or modify it under
 # the terms of the Modified BSD License, as published by the
@@ -16,7 +16,7 @@
 # Modified BSD License for more details.
 #
 # You should have received a copy of the Modified BSD License
-# along with this UM SST-pert module.
+# along with this SHUMlib packing module.
 # If not, see <http://opensource.org/licenses/BSD-3-Clause>.
 import os
 import shutil
@@ -49,29 +49,25 @@ class CleanCommand(setuptools.Command):
                 elif os.path.isdir(cleanpath[0]):
                     shutil.rmtree(cleanpath[0])
 
+
 setuptools.setup(
-    name='um_sstpert',
+    name='um_ppibm',
     version='2020.01.1',
-    description='Unified Model SST-perturbation extension and utility',
+    description='Unified Model pp conversion utility with IBM number format',
     author='UM Systems Team',
     url='https://code.metoffice.gov.uk/trac/um',
     cmdclass={'clean': CleanCommand},
     package_dir={'': 'lib'},
-    packages=['um_sstpert'],
+    packages=['um_ppibm', ],
     features={
-        'sstpert': setuptools.Feature(
-            "UM SST-pert library (requires UM Licence)",
+        'ieee2ibm32': setuptools.Feature(
+            "SHUMlib IBM conversion routine",
             standard=True,
             ext_modules=[
                 setuptools.Extension(
-                    'um_sstpert.um_sstpert',
-                    ['lib/um_sstpert/um_sstpert.c'],
+                    'um_ppibm.um_ieee2ibm32',
+                    ['lib/um_ppibm/um_ieee2ibm32.c'],
                     include_dirs=[np.get_include()],
-                    libraries=["um_sstpert",
-                               "shum_string_conv",
-                               "shum_constants"])
-                ])},
-    entry_points={
-        'console_scripts': [
-            'mule-sstpert = um_sstpert:_main',
-            ]})
+                    libraries=["shum_string_conv",
+                               "shum_byteswap",
+                               "shum_data_conv"])])})
