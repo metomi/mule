@@ -91,6 +91,7 @@ import errno
 import argparse
 import textwrap
 import numpy as np
+import warnings
 from six import StringIO
 from collections import defaultdict
 from um_utils.stashmaster import STASHmaster
@@ -978,11 +979,13 @@ def summary_report(comparison, stdout=None):
     # Report on the maximum RMS diff percentage
     if comparison.max_rms_diff_1[0] > 0.0:
         stdout.write(
-            "Maximum RMS diff as % of data in file 1: {0!r} (field {1})\n"
+            "Maximum RMS diff as % of data in file 1: "
+            "{0:<18.17g} (field {1})\n"
             .format(*comparison.max_rms_diff_1))
     if comparison.max_rms_diff_2[0] > 0.0:
         stdout.write(
-            "Maximum RMS diff as % of data in file 2: {0!r} (field {1})\n"
+            "Maximum RMS diff as % of data in file 2: "
+            "{0:<18.17g} (field {1})\n"
             .format(*comparison.max_rms_diff_2))
 
     if (comparison.max_rms_diff_1[0] > 0.0 or
@@ -1186,21 +1189,21 @@ def full_report(comparison, stdout=None, **kwargs):
             stdout.write("Data differences:\n")
             stdout.write("  Number of point differences  : {0}/{1}\n"
                          .format(*comp_field.compared))
-            stdout.write("  Maximum absolute difference  : {0!r}\n"
+            stdout.write("  Maximum absolute difference  : {0:<18.17g}\n"
                          .format(comp_field.max_diff))
-            stdout.write("  RMS difference               : {0!r}\n"
+            stdout.write("  RMS difference               : {0:<18.17g}\n"
                          .format(comp_field.rms_diff))
             if comp_field.rms_norm_diff_1 is None:
                 stdout.write("  RMS diff as % of file_1 data : "
                              "NaN (File 1 data all zero) \n")
             else:
-                stdout.write("  RMS diff as % of file_1 data : {0!r}\n"
+                stdout.write("  RMS diff as % of file_1 data : {0:<18.17g}\n"
                              .format(comp_field.rms_norm_diff_1))
             if comp_field.rms_norm_diff_2 is None:
                 stdout.write("  RMS diff as % of file_2 data : "
                              "NaN (File 2 data all zero) \n")
             else:
-                stdout.write("  RMS diff as % of file_2 data : {0!r}\n"
+                stdout.write("  RMS diff as % of file_2 data : {0:<18.17g}\n"
                              .format(comp_field.rms_norm_diff_2))
 
         stdout.write("\n")
@@ -1405,20 +1408,37 @@ def _main():
         new_ff.fields = [field for field in comparison.field_comparisons
                          if not field.data_match and field.data_shape_match]
 
-        # If any of these fields require the land-sea-mask to be written out
-        # add it to the start of the file list here
-        mask_required = [field.lbpack % 100 != 0 for field in new_ff.fields]
-        if any(mask_required):
-            lsm = None
-            for field in um_files[0].fields:
-                if field.lbrel in (2, 3) and field.lbuser4 == 30:
-                    lsm = field
-                    break
-            if lsm is None:
-                msg = "Unable to write diff file, land-sea mask not present"
-                raise ValueError(msg)
-            new_ff.fields.insert(0, lsm)
+        # Check if a land sea mask exists in the first file
+        lsm = None
+        for field in um_files[0].fields:
+            if field.lbrel in (2, 3) and field.lbuser4 == 30:
+                lsm = field
+                break
 
+        # Now double check that there weren't any differences between the
+        # mask in the 2 files (if there were, the output for a land/sea
+        # compressed field in this diff file will be very misleading)
+        for field in new_ff.fields:
+            if field.lbuser4 == 30:
+                # If there is a land/sea mask difference, disable it
+                lsm = None
+
+        # Now check for land/sea packed fields within the diff file
+        for ifield, field in enumerate(new_ff.fields):
+            if (field.lbpack // 10) % 10 != 0:
+                if lsm is not None:
+                    # If we have the LSM, add it to the diff file
+                    new_ff.fields.insert(0, lsm)
+                    break
+                else:
+                    # Otherwise Mule won't let us output the field, so warn
+                    # about this here and then remove it from the diff file
+                    msg = ("Unable to output Field {0} as it is land/sea "
+                           "packed but no suitable land-sea mask was found")
+                    warnings.warn(msg.format(ifield + 1))
+                    new_ff.fields.remove(field)
+
+        # Assuming there are still writable fields in the diff file, write it
         if len(new_ff.fields) > 0:
             new_ff.to_file(diff_file)
 
