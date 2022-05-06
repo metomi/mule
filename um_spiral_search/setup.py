@@ -49,9 +49,10 @@ class CleanCommand(setuptools.Command):
                 elif os.path.isdir(cleanpath[0]):
                     shutil.rmtree(cleanpath[0])
 
+
 setuptools.setup(
     name='um_spiral_search',
-    version='2020.01.1',
+    version='2022.05.1',
     description='Unified Model Spiral Search extension',
     author='UM Systems Team',
     url='https://code.metoffice.gov.uk/trac/um',
@@ -59,16 +60,12 @@ setuptools.setup(
     package_dir={'': 'lib'},
     packages=['um_spiral_search',
               'um_spiral_search.tests'],
-    features={
-        'spiralsearch': setuptools.Feature(
-            "UM Spiral Search library",
-            standard=True,
-            ext_modules=[
-                setuptools.Extension(
-                    'um_spiral_search.um_spiral_search',
-                    ['lib/um_spiral_search/um_spiral_search.c'],
-                    include_dirs=[np.get_include()],
-                    libraries=["shum_spiral_search",
-                               "shum_string_conv",
-                               "shum_constants"])
-                ])})
+    ext_modules=[
+        setuptools.Extension(
+            'um_spiral_search.um_spiral_search',
+            ['lib/um_spiral_search/um_spiral_search.c'],
+            include_dirs=[np.get_include()],
+            libraries=["shum_spiral_search",
+                       "shum_string_conv",
+                       "shum_constants"])
+        ])

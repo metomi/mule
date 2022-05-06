@@ -52,22 +52,18 @@ class CleanCommand(setuptools.Command):
 
 setuptools.setup(
     name='um_ppibm',
-    version='2020.01.1',
+    version='2022.05.1',
     description='Unified Model pp conversion utility with IBM number format',
     author='UM Systems Team',
     url='https://code.metoffice.gov.uk/trac/um',
     cmdclass={'clean': CleanCommand},
     package_dir={'': 'lib'},
     packages=['um_ppibm', ],
-    features={
-        'ieee2ibm32': setuptools.Feature(
-            "SHUMlib IBM conversion routine",
-            standard=True,
-            ext_modules=[
-                setuptools.Extension(
-                    'um_ppibm.um_ieee2ibm32',
-                    ['lib/um_ppibm/um_ieee2ibm32.c'],
-                    include_dirs=[np.get_include()],
-                    libraries=["shum_string_conv",
-                               "shum_byteswap",
-                               "shum_data_conv"])])})
+    ext_modules=[
+        setuptools.Extension(
+            'um_ppibm.um_ieee2ibm32',
+            ['lib/um_ppibm/um_ieee2ibm32.c'],
+            include_dirs=[np.get_include()],
+            libraries=["shum_string_conv",
+                       "shum_byteswap",
+                       "shum_data_conv"])])

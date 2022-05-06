@@ -47,7 +47,7 @@ class CleanCommand(setuptools.Command):
 
 setuptools.setup(
     name='um_utils',
-    version='2020.01.1',
+    version='2022.05.1',
     description='Unified Model Fields File utilities',
     author='UM Systems Team',
     url='https://code.metoffice.gov.uk/trac/um',
@@ -79,4 +79,5 @@ setuptools.setup(
             'mule-fixframe = um_utils.fixframe:_main',
             'mule-unpack = um_utils.unpack:_main',
             'mule-select = um_utils.select:_main',
-            'mule-convpp = um_utils.convpp:_main']})
+            'mule-convpp = um_utils.convpp:_main',
+            'mule-editmask = um_utils.editmask:_main']})
