@@ -32,15 +32,20 @@ set -eu
 # Setup what version of things should be used
 
 # Mule version for build (will be checked out from SRS)
-mule_ver=2023.08.1
+mule_ver=2024.11.1
 # UM version for sstpert and wafccb libraries (will be looked up in $UMDIR)
-um_ver=vn13.3
+um_ver=vn13.7
 # Shumlib version (will be looked up in $UMDIR)
-shum_ver=2023.08.1
+shum_ver=2024.11.1
 
 # Set library locations and which specific builds to use on each platform
 hostname=$(hostname)
-if [[ $hostname == uan01 ]] ; then  # EXZ
+if [[ $hostname == cazld* ]] ; then # AZSPICE
+  shum=$UMDIR/shumlib/shumlib-2024.03.1/azspice-gfortran-12.2.0-gcc-12.2.0
+  sst=$UMDIR/$um_ver/linux/sstpert_gnu
+  wafc=$UMDIR/$um_ver/linux/wafccb_gnu
+
+elif [[ $hostname == uan01 ]] || [[ $hostname == login* ]] ; then  # EX
   shum=$UMDIR/shumlib/shumlib-$shum_ver/meto-ex1a-crayftn-15.0.0-craycc-15.0.0
   sst=$UMDIR/$um_ver/ex1a/sstpert_cce
   wafc=$UMDIR/$um_ver/ex1a/wafccb_cce
@@ -87,9 +92,10 @@ for omp in openmp no-openmp ; do
     # Mule's install script, with all of the optional features enabled
     # (this is a central install so we want everything)
     admin/install_mule.sh \
-        --library_lock --ppibm_lib --spiral_lib \
+        --library_lock --ppibm_lib --spiral_lib --packing_lib\
         --sstpert_lib $sst --wafccb_lib $wafc \
-        ../$dest_dir/$omp/lib ../$dest_dir/$omp/bin $shum/$omp
+        --shumlib_path $shum/$omp \
+        ../$dest_dir/$omp/lib ../$dest_dir/$omp/bin
 
     # Check the build works by running the unit-tests
     for mod in um_packing mule um_utils um_spiral_search ; do
